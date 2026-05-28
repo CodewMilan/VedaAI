@@ -123,8 +123,9 @@ function SectionBlock({
   sectionLabel: string;
 }) {
   return (
-    <section className="flex flex-col items-stretch gap-4 print-section">
-      <h2 className="text-center text-[20px] font-semibold leading-[1.6] tracking-[-0.03em] text-[#303030] sm:text-[24px]">
+    <section className="flex flex-col items-stretch gap-4">
+      {/* break-after-avoid keeps the heading from being stranded alone at a page bottom */}
+      <h2 className="text-center text-[20px] font-semibold leading-[1.6] tracking-[-0.03em] text-[#303030] sm:text-[24px] print:break-after-avoid">
         Section {sectionLabel}
       </h2>
       <div>

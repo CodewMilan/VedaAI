@@ -102,8 +102,8 @@ export default function AssignmentDetailPage() {
     <AppShell>
       {isReady ? (
         /* Figma 2:10682 — dark gray outer container wraps the chat header + paper */
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="flex flex-col gap-3 rounded-[32px] bg-[#5e5e5e] p-3 sm:p-5">
+        <div className="mx-auto w-full max-w-5xl print:max-w-none print:mx-0">
+          <div className="flex flex-col gap-3 rounded-[32px] bg-[#5e5e5e] p-3 sm:p-5 print:bg-transparent print:p-0 print:rounded-none print:gap-0">
             <ActionBar assignment={assignment} />
             <PaperView assignment={assignment} paper={assignment.result!} />
           </div>

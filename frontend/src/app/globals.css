@@ -152,15 +152,56 @@
   }
 }
 
-/* Print styles for PDF export */
+/* ─── Print / PDF export ─────────────────────────────────────────────────────
+   Goal: the only thing that prints is the <article id="paper-root"> element.
+
+   Strategy:
+   1. Shell chrome (sidebar, topbar, tab bar, drawer) already carries .no-print
+      → display:none removes them from the document flow entirely.
+   2. .app-content removes the sidebar's left-offset padding from the content
+      wrapper so the paper isn't indented by 327px on large screens.
+   3. The dark container wrapping the paper already has print:p-0 / print:gap-0
+      Tailwind classes, collapsing it to a zero-padding wrapper.
+   4. #paper-root stays in normal block flow — no position tricks — so that
+      CSS page-break / break-* rules work correctly across pages.
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media print {
+  html {
+    background: white !important;
+  }
   body {
     background: white !important;
     background-image: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
+
+  /* 1. Remove all chrome from layout flow */
   .no-print { display: none !important; }
-  .print-page { @apply shadow-none; page-break-inside: avoid; }
+
+  /* 2. Strip sidebar offset from the content wrapper */
+  .app-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 3. Remove the tab-bar bottom padding from <main> */
+  main {
+    padding-bottom: 0 !important;
+  }
+
+  /* 4. Paper style resets — border-radius / shadow look wrong on paper */
+  #paper-root {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Answer-key block stays together; individual questions use break-inside-avoid */
   .print-section { break-inside: avoid; }
+
   @page {
     margin: 18mm 16mm;
     size: A4;

@@ -29,16 +29,19 @@ export const metadata: Metadata = {
   description:
     "Generate beautifully formatted, exam-ready question papers in minutes — powered by AI.",
   icons: {
+    // PNG first so browsers render the crisp raster icon on tabs;
+    // SVG as a fallback for clients that prefer vector.
     icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "any" },
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    apple: "/apple-icon.png",
+    shortcut: "/favicon.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e56820",
+  themeColor: "#ff5a26",
 };
 
 export default async function RootLayout({

@@ -1,11 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
-    <!-- Background gradient — matches VedaLogo: #e56820 → #d45e3e -->
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e56820"/>
-      <stop offset="100%" stop-color="#d45e3e"/>
+    <!--
+      New brand icon: dark maroon top → bright orange-red bottom-right,
+      glossy "iOS app icon" feel. Matches /public/icon.png reference.
+    -->
+
+    <!-- Base diagonal gradient: deep dark maroon at top-left → vivid orange-red bottom-right -->
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#160807"/>
+      <stop offset="55%"  stop-color="#7e2a13"/>
+      <stop offset="100%" stop-color="#ff5a26"/>
     </linearGradient>
-    <!-- Left-arm sheen (fold shadow) — same as veda-logo.tsx vedaLogoSheen -->
+
+    <!-- Warm radial glow on lower-right adds the "lit from below" feel of the reference -->
+    <radialGradient id="glow" cx="0.78" cy="0.85" r="0.85" fx="0.85" fy="0.95">
+      <stop offset="0%"  stop-color="#ff7a3c" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#ff5a26" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#ff5a26" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Inner top highlight (the subtle shine on every iOS icon) -->
+    <linearGradient id="topShine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Bottom edge shadow for depth -->
+    <linearGradient id="botShadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="70%"  stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.22"/>
+    </linearGradient>
+
+    <!-- Sheen on left arm of V (matches veda-logo.tsx convention) -->
     <linearGradient id="sheen"
       x1="34.7749" y1="11.2061"
       x2="34.7749" y2="33.9908"
@@ -15,51 +41,37 @@
       <stop offset="76%"  stop-color="#0E1513"/>
       <stop offset="100%" stop-color="#0E1513"/>
     </linearGradient>
-    <!-- Top-edge highlight (mimics VedaLogo inset 0 1px 2px rgba(255,255,255,0.25)) -->
-    <linearGradient id="topShine" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.28"/>
-      <stop offset="30%"  stop-color="#ffffff" stop-opacity="0"/>
-    </linearGradient>
-    <!-- Bottom-edge shadow (mimics VedaLogo inset 0 -1px 2px rgba(0,0,0,0.18)) -->
-    <linearGradient id="botShadow" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="70%"  stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.22"/>
-    </linearGradient>
+
     <clipPath id="bounds">
-      <rect width="64" height="64" rx="16"/>
+      <rect width="64" height="64" rx="14"/>
     </clipPath>
   </defs>
 
-  <!-- Rounded-square background (rx=16 matches rounded-[10px] at 40px scaled to 64px) -->
-  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <!-- Layer 1: solid base color so transparent edges read correctly at small sizes -->
+  <rect width="64" height="64" rx="14" fill="#1a0a08"/>
 
-  <!-- Grain texture — same positioning as VedaLogo CSS:
-       left -21.2% → -13.57   top -33.02% → -21.13
-       w 290.14% → 185.7      h 162.5% → 104          -->
-  <image clip-path="url(#bounds)"
-         href="/brand/logo-grain.jpg"
-         x="-13.57" y="-21.13"
-         width="185.7" height="104"
-         preserveAspectRatio="xMidYMid slice"/>
+  <!-- Layer 2: diagonal dark→orange gradient -->
+  <rect clip-path="url(#bounds)" width="64" height="64" fill="url(#base)"/>
 
-  <!-- Top highlight overlay -->
-  <rect clip-path="url(#bounds)" width="64" height="64" rx="16" fill="url(#topShine)"/>
+  <!-- Layer 3: warm radial glow on lower-right -->
+  <rect clip-path="url(#bounds)" width="64" height="64" fill="url(#glow)"/>
 
-  <!-- Bottom shadow overlay -->
-  <rect clip-path="url(#bounds)" width="64" height="64" rx="16" fill="url(#botShadow)"/>
+  <!-- Layer 4: top inner highlight -->
+  <rect clip-path="url(#bounds)" width="64" height="64" fill="url(#topShine)"/>
+
+  <!-- Layer 5: bottom inner shadow -->
+  <rect clip-path="url(#bounds)" width="64" height="64" fill="url(#botShadow)"/>
 
   <!--
-    V paths in original Figma coords; scaled to fill 70% of 64px (= 44.8px wide).
-    scale = 44.8/28 = 1.6
-    translate = (9.6 - 25.7143×1.6 , 16.47 - 12.8571×1.6)
-              = (-31.543, -4.101)
+    V mark — Figma-native coords scaled to fill 70% of canvas.
+    scale = 44.8/28 = 1.6   translate = (-31.543, -4.101)
   -->
   <g clip-path="url(#bounds)" transform="translate(-31.543 -4.101) scale(1.6)">
     <!-- left arm -->
     <path fill-rule="evenodd" clip-rule="evenodd"
       d="M42.4413 30.2153C42.4413 30.2153 43.1688 32.1573 43.8355 32.2789H35.4112C33.7141 32.2789 32.1993 31.3079 31.714 29.487L26.805 14.9207C26.805 14.9207 26.381 13.1606 25.7143 12.8571H34.3204C36.0176 12.9179 37.1691 13.5247 37.8357 15.7706L42.4413 30.2153Z"
       fill="#ffffff"/>
-    <!-- fold shadow on left arm (0.18 opacity like veda-logo.tsx) -->
+    <!-- left arm fold shadow -->
     <path opacity="0.18" fill-rule="evenodd" clip-rule="evenodd"
       d="M42.4413 30.2153C42.4413 30.2153 43.1688 32.1573 43.8355 32.2789H35.4112C33.7141 32.2789 32.1993 31.3079 31.714 29.487L26.805 14.9207C26.805 14.9207 26.381 13.1606 25.7143 12.8571H34.3204C36.0176 12.9179 37.1691 13.5247 37.8357 15.7706L42.4413 30.2153Z"
       fill="url(#sheen)"/>

@@ -92,16 +92,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen">
-      {/* ── Desktop sidebar (Figma: left:12, top:12, bottom:12, width:304) ── */}
-      <aside className="fixed bottom-3 left-3 top-3 z-40 hidden w-[304px] flex-col overflow-hidden rounded-2xl bg-white p-6 sidebar-shadow lg:flex">
+      {/* ── Desktop sidebar — hidden during print ── */}
+      <aside className="no-print fixed bottom-3 left-3 top-3 z-40 hidden w-[304px] flex-col overflow-hidden rounded-2xl bg-white p-6 sidebar-shadow lg:flex">
         <SidebarInner />
       </aside>
 
-      {/* ── Mobile drawer (slides in from left) ── */}
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {/* ── Mobile drawer — hidden during print ── */}
+      <div className="no-print">
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      </div>
 
       {/* ── Content area ── */}
-      <div className="px-3 lg:pl-[327px] lg:pr-3">
+      <div className="app-content px-3 lg:pl-[327px] lg:pr-3">
         <TopBar
           showBack={showBack}
           crumb={crumb}
@@ -109,11 +111,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
         {/* Extra bottom padding on mobile so floating tab bar doesn't
             obscure content. Desktop sidebar already handles its own gutter. */}
-        <main className="pb-28 lg:pb-10">{children}</main>
+        <main className="pb-28 lg:pb-10 print:!pb-0">{children}</main>
       </div>
 
-      {/* ── Mobile bottom tab bar (Figma 19:350/56) ──
-          Hidden on desktop where the sidebar handles navigation. */}
+      {/* ── Mobile bottom tab bar — hidden during print ── */}
       <MobileTabBar />
     </div>
   );
@@ -152,7 +153,7 @@ function MobileTabBar() {
   return (
     <div
       data-figma-node="19:352"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-2.5 pb-3 lg:hidden"
+      className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40 px-2.5 pb-3 lg:hidden"
     >
       <div className="pointer-events-auto mx-auto flex max-w-[480px] flex-col items-end gap-3">
         {/* Floating "+ Create" button — Figma 19:353/54 */}
@@ -399,7 +400,7 @@ function TopBar({
   return (
     <header
       className={cn(
-        "sticky top-3 z-30 mb-5 flex h-14 items-center gap-2 overflow-hidden rounded-2xl",
+        "no-print sticky top-3 z-30 mb-5 flex h-14 items-center gap-2 overflow-hidden rounded-2xl",
         "bg-[rgba(255,255,255,0.78)] pl-3 pr-3 backdrop-blur lg:pl-6",
         "shadow-[0_1px_2px_rgba(15,15,15,0.04)]"
       )}
