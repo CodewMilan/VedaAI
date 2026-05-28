@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="frontend/public/icon.png" alt="VedaAI" width="96" height="96" />
-
 # VedaAI — AI Assessment Creator
 
 **A full‑stack, real‑time assessment generator for teachers.**
