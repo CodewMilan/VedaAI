@@ -58,13 +58,18 @@ async function main() {
   initSocket(httpServer);
   await startSocketBridge();
 
-  const port = await findAvailablePort(env.port);
-  if (port !== env.port) {
+  /* In production (Railway / Render) the host injects PORT and we MUST
+     bind to 0.0.0.0 on that exact port — auto-bumping breaks the host's
+     port detection. Locally we keep the dev-friendly auto-bump. */
+  const isProd = env.nodeEnv === "production";
+  const port = isProd ? env.port : await findAvailablePort(env.port);
+  if (!isProd && port !== env.port) {
     console.warn(`[api] port ${env.port} is busy — using ${port} instead`);
   }
 
-  httpServer.listen(port, () => {
-    console.log(`[api] listening on http://localhost:${port}`);
+  const host = isProd ? "0.0.0.0" : "localhost";
+  httpServer.listen(port, host, () => {
+    console.log(`[api] listening on http://${host}:${port}`);
   });
 
   const shutdown = async () => {

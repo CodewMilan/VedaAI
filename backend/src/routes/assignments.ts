@@ -1,7 +1,5 @@
 import { Router, type Request, type Response } from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs/promises";
 import mongoose from "mongoose";
 import { Assignment } from "../models/Assignment";
 import { CreateAssignmentSchema } from "../types";
@@ -9,17 +7,11 @@ import { generationQueue } from "../queue";
 import { extractText } from "../services/fileExtractor";
 import { redis } from "../config/redis";
 
-const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
-fs.mkdir(UPLOAD_DIR, { recursive: true }).catch(() => {});
-
+/* Memory storage — uploads never touch disk. Required for serverless /
+   ephemeral-filesystem hosts (Railway, Render, Vercel). The buffer is
+   handed to extractText() once and discarded. */
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: UPLOAD_DIR,
-    filename: (_req, file, cb) => {
-      const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
-      cb(null, `${Date.now()}-${safe}`);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
   fileFilter: (_req, file, cb) => {
     const ok =
@@ -65,10 +57,13 @@ assignmentsRouter.post(
 
       let uploadedMaterial: Record<string, unknown> | undefined;
       if (req.file) {
-        const text = await extractText(req.file.path, req.file.mimetype);
+        const text = await extractText(
+          req.file.buffer,
+          req.file.mimetype,
+          req.file.originalname
+        );
         uploadedMaterial = {
           filename: req.file.originalname,
-          storedName: req.file.filename,
           mimeType: req.file.mimetype,
           sizeBytes: req.file.size,
           extractedText: text,
