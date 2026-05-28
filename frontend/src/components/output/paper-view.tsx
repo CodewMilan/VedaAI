@@ -153,6 +153,8 @@ function QuestionBlock({ q }: { q: Question }) {
         [{difficultyLabel(q.difficulty)}] {q.text} [{q.marks}{" "}
         {q.marks === 1 ? "Mark" : "Marks"}]
       </span>
+
+      {/* MCQ options */}
       {q.options && q.options.length > 0 && (
         <ol className="mt-1 space-y-0.5 pl-6 text-[14px] leading-[1.8] sm:text-[16px]">
           {q.options.map((opt, i) => (
@@ -165,26 +167,68 @@ function QuestionBlock({ q }: { q: Question }) {
           ))}
         </ol>
       )}
+
+      {/* True / False bubbles */}
       {q.type === "true_false" && (
         <div className="mt-1 flex gap-6 pl-6 text-[14px] text-[#5e5e5e] sm:text-[16px]">
           <span>○ True</span>
           <span>○ False</span>
         </div>
       )}
+
+      {/* Fill-in-the-blank underline */}
       {q.type === "fill_blank" && !q.options && (
         <div className="mt-1 ml-6 inline-block min-w-[160px] border-b-2 border-dashed border-[#303030]/40" />
       )}
+
+      {/* Diagram / graph placeholder frame */}
+      {q.type === "diagram" && (
+        <div className="mt-3 ml-6 mb-1">
+          <div
+            className={cn(
+              "flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-lg",
+              "border-2 border-dashed border-[#303030]/25 bg-[#fafafa]",
+              "print:border-solid print:border-[#303030]/40 print:bg-transparent print:min-h-[180px]"
+            )}
+          >
+            {/* Simple graph icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-8 w-8 text-[#303030]/25 print:text-[#303030]/30"
+              aria-hidden="true"
+            >
+              {/* axes */}
+              <polyline points="3 3 3 21 21 21" />
+              {/* bar chart bars */}
+              <rect x="6"  y="14" width="3" height="7" rx="0.5" />
+              <rect x="11" y="9"  width="3" height="12" rx="0.5" />
+              <rect x="16" y="5"  width="3" height="16" rx="0.5" />
+            </svg>
+            <p className="text-[12px] italic tracking-wide text-[#303030]/30 print:text-[13px]">
+              [ Figure / Diagram ]
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Answer lines — short, long, numerical get writing lines; diagram gets 2 lines below the frame */}
       {(q.type === "short" ||
         q.type === "long" ||
         q.type === "numerical" ||
         q.type === "diagram") && (
-        <div className="mt-1 space-y-2 pl-6">
+        <div className="mt-2 space-y-2 pl-6">
           {Array.from({
             length:
               q.type === "long" || q.type === "numerical"
                 ? 5
                 : q.type === "diagram"
-                  ? 3
+                  ? 2
                   : 2,
           }).map((_, i) => (
             <div
@@ -249,5 +293,3 @@ function difficultyLabel(d: Difficulty): string {
   return "Challenging";
 }
 
-// Keep `cn` import used (so future small style toggles don't re-add it manually).
-void cn;
