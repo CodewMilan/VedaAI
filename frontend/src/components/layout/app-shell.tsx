@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   Menu,
   X,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VedaLogo } from "@/components/brand/veda-logo";
@@ -106,7 +107,107 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           crumb={crumb}
           onMenuClick={() => setDrawerOpen(true)}
         />
-        <main className="pb-10">{children}</main>
+        {/* Extra bottom padding on mobile so floating tab bar doesn't
+            obscure content. Desktop sidebar already handles its own gutter. */}
+        <main className="pb-28 lg:pb-10">{children}</main>
+      </div>
+
+      {/* ── Mobile bottom tab bar (Figma 19:350/56) ──
+          Hidden on desktop where the sidebar handles navigation. */}
+      <MobileTabBar />
+    </div>
+  );
+}
+
+/* ─────────── Mobile bottom tab bar ─────────── */
+
+type TabItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const tabItems: TabItem[] = [
+  { href: "/",            label: "Home",        icon: LayoutDashboard },
+  { href: "/assignments", label: "Assignments", icon: FileText },
+  { href: "/groups",      label: "Groups",      icon: Users },
+  { href: "/library",     label: "Library",     icon: Library },
+];
+
+function isTabActive(href: string, pathname: string) {
+  if (href === "/") return pathname === "/";
+  if (href === "/assignments") {
+    return pathname === "/assignments" || /^\/assignments\/[^/]+$/.test(pathname);
+  }
+  return pathname.startsWith(href);
+}
+
+function MobileTabBar() {
+  const pathname = usePathname();
+
+  /* Don't show the tab bar on the new-assignment form — the user is mid-flow
+     and the sticky form footer needs the screen real-estate. */
+  if (pathname === "/assignments/new") return null;
+
+  return (
+    <div
+      data-figma-node="19:352"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-2.5 pb-3 lg:hidden"
+    >
+      <div className="pointer-events-auto mx-auto flex max-w-[480px] flex-col items-end gap-3">
+        {/* Floating "+ Create" button — Figma 19:353/54 */}
+        <Link
+          href="/assignments/new"
+          aria-label="Create assignment"
+          className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#ff5623]",
+            "shadow-[0_16px_24px_rgba(0,0,0,0.12),0_32px_24px_rgba(0,0,0,0.2)]",
+            "transition-transform duration-150 hover:scale-105",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5623] focus-visible:ring-offset-2"
+          )}
+        >
+          <Plus className="h-5 w-5" strokeWidth={2.4} />
+        </Link>
+
+        {/* Tab bar — Figma 19:356: bg #181818, h-72, rounded-24, dropshadow */}
+        <nav
+          aria-label="Primary"
+          className={cn(
+            "flex h-[60px] w-full items-center justify-between rounded-[20px] bg-[#181818] px-3",
+            "shadow-[0_16px_24px_rgba(0,0,0,0.12),0_32px_24px_rgba(0,0,0,0.2)]"
+          )}
+          data-figma-node="19:356"
+        >
+          {tabItems.map((item) => {
+            const Icon = item.icon;
+            const active = isTabActive(item.href, pathname);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex h-full flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-2",
+                  "transition-colors duration-150",
+                  active ? "text-white" : "text-white/25 hover:text-white/60"
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon
+                  className={cn(
+                    "h-5 w-5 transition-transform duration-150",
+                    active && "scale-105"
+                  )}
+                />
+                <span
+                  className="text-[10.5px] font-semibold leading-none tracking-[-0.02em]"
+                  style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

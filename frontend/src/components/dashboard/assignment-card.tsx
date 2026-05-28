@@ -12,11 +12,15 @@ import {
   Clock,
   AlertCircle,
   RefreshCw,
+  Users,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import type { Assignment } from "@/lib/types";
+import { GROUP_COLOR_TOKENS } from "@/lib/types";
 import { deleteAssignment, regenerateAssignment } from "@/lib/api";
 import { useAssignmentsStore } from "@/store/assignments";
+import { useGroupsStore } from "@/store/groups";
+import { AssignToGroupsDialog } from "@/components/groups/assign-to-groups-dialog";
 
 const STATUS_META: Record<
   Assignment["status"],
@@ -48,11 +52,19 @@ const STATUS_META: Record<
 export function AssignmentCard({ a }: { a: Assignment }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [busy, setBusy] = React.useState<"del" | "regen" | null>(null);
+  const [assignOpen, setAssignOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const meta = STATUS_META[a.status];
 
   const remove = useAssignmentsStore((s) => s.remove);
   const upsert = useAssignmentsStore((s) => s.upsert);
+  const groupsById = useGroupsStore((s) => s.byId);
+
+  /* Resolve assigned-group chips lazily — we don't block render on
+     groups being loaded; chips just appear once the store hydrates. */
+  const linkedGroups = (a.groupIds ?? [])
+    .map((id) => groupsById[id])
+    .filter(Boolean);
 
   React.useEffect(() => {
     if (!menuOpen) return;
@@ -160,6 +172,20 @@ export function AssignmentCard({ a }: { a: Assignment }) {
                 <button
                   role="menuitem"
                   type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    setAssignOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[14px] font-medium text-[#303030] transition-colors duration-100 hover:bg-[#f6f6f6]"
+                >
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  Assign to groups…
+                </button>
+                <button
+                  role="menuitem"
+                  type="button"
                   onClick={onRegen}
                   disabled={busy !== null || a.status === "processing"}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-[14px] font-medium text-[#303030] transition-colors duration-100 hover:bg-[#f6f6f6] disabled:cursor-not-allowed disabled:opacity-50"
@@ -190,7 +216,10 @@ export function AssignmentCard({ a }: { a: Assignment }) {
           </div>
         </div>
 
-        {/* ── Optional inline status (only when NOT 'completed' — Figma's variant) ── */}
+        {/* ── Status indicator + assigned-group chips ──
+            For non-completed assignments we show the status line (Figma
+            documents only the "ready" variant; statuses still need a UI).
+            Completed assignments display group chips instead if any are linked. */}
         {a.status === "processing" ? (
           <div>
             <div className="flex items-center justify-between text-[12px] font-medium">
@@ -219,6 +248,32 @@ export function AssignmentCard({ a }: { a: Assignment }) {
             <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
             {meta.label}
           </span>
+        ) : linkedGroups.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {linkedGroups.slice(0, 2).map((g) => {
+              const t = GROUP_COLOR_TOKENS[g.color];
+              return (
+                <span
+                  key={g.id}
+                  className="inline-flex max-w-[140px] items-center gap-1 truncate rounded-full px-2 py-0.5 text-[11.5px] font-medium"
+                  style={{ background: t.bgSoft, color: t.fg }}
+                  title={g.name}
+                >
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: t.bg }}
+                  />
+                  <span className="truncate">{g.name}</span>
+                </span>
+              );
+            })}
+            {linkedGroups.length > 2 && (
+              <span className="inline-flex items-center rounded-full bg-[#f0f0f0] px-2 py-0.5 text-[11.5px] font-medium text-muted-foreground">
+                +{linkedGroups.length - 2}
+              </span>
+            )}
+          </div>
         ) : null}
 
         {/* ── Footer row: Assigned on : DATE · Due : DATE — exact Figma typography ── */}
@@ -240,6 +295,12 @@ export function AssignmentCard({ a }: { a: Assignment }) {
           )}
         </div>
       </article>
+
+      <AssignToGroupsDialog
+        open={assignOpen}
+        assignment={a}
+        onClose={() => setAssignOpen(false)}
+      />
     </Link>
   );
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { LogOut, Mail, Building2, User as UserIcon, Loader2, Check } from "lucide-react";
+import { LogOut, Mail, User as UserIcon, Loader2, Check } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useUser, userDisplay } from "@/lib/auth/use-user";
 import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -121,30 +121,7 @@ export default function SettingsPage() {
           </form>
         </section>
 
-        {/* Workspace */}
-        <section className="rounded-2xl bg-white p-6 card-shadow sm:p-8">
-          <header className="mb-5 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff0ea] text-[#ff5623]">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="text-[17px] font-bold tracking-[-0.02em] text-foreground">
-                Workspace
-              </h2>
-              <p className="text-[13px] text-muted-foreground">
-                Connected services and AI provider.
-              </p>
-            </div>
-          </header>
-          <dl className="divide-y divide-[#f0f0f0] text-[13.5px]">
-            <Row label="AI provider" value="OpenRouter (OpenAI-compatible)" />
-            <Row label="Default model" value={process.env.NEXT_PUBLIC_DEFAULT_MODEL ?? "openai/gpt-4o-mini"} />
-            <Row label="Storage" value="MongoDB Atlas" />
-            <Row label="Queue" value="Redis + BullMQ" />
-          </dl>
-        </section>
-
-        {/* Danger zone */}
+        {/* Session */}
         <section className="rounded-2xl bg-white p-6 card-shadow sm:p-8">
           <header className="mb-5">
             <h2 className="text-[17px] font-bold tracking-[-0.02em] text-foreground">
@@ -185,15 +162,6 @@ function Field({
         {label}
       </label>
       {children}
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between py-3">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right font-medium text-foreground">{value}</dd>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Filter, Search, Plus, FileSearch, Check } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useAssignmentsStore } from "@/store/assignments";
+import { useGroupsStore } from "@/store/groups";
 import { AssignmentCard } from "@/components/dashboard/assignment-card";
 import type { AssignmentStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ import { cn } from "@/lib/utils";
 export function DashboardView() {
   const { fetchAll, bindSocket, byId, order, loaded, loading } =
     useAssignmentsStore();
+  const fetchGroups = useGroupsStore((s) => s.fetchAll);
+  const groupsLoaded = useGroupsStore((s) => s.loaded);
   const [query, setQuery] = React.useState("");
   const [filters, setFilters] = React.useState<Filters>({
     status: "all",
@@ -33,7 +36,10 @@ export function DashboardView() {
   React.useEffect(() => {
     fetchAll();
     bindSocket();
-  }, [fetchAll, bindSocket]);
+    /* Pre-hydrate groups so AssignmentCard can render group chips on the
+       very first paint instead of popping in a moment later. */
+    if (!groupsLoaded) fetchGroups();
+  }, [fetchAll, bindSocket, fetchGroups, groupsLoaded]);
 
   const list = order.map((id) => byId[id]).filter(Boolean);
 
@@ -138,8 +144,9 @@ function StickyCreateCta() {
     <div
       aria-hidden="false"
       className={cn(
-        "pointer-events-none fixed bottom-0 left-0 right-0 z-20 flex items-end justify-center px-3 pb-4 pt-6",
-        // gradient fade so cards underneath blend into the white pill cleanly
+        /* Hidden on mobile — the floating "+" in the bottom tab bar covers
+           this affordance and we don't want them to fight for the same pixel. */
+        "pointer-events-none fixed bottom-0 left-0 right-0 z-20 hidden items-end justify-center px-3 pb-4 pt-6 lg:flex",
         "bg-gradient-to-t from-white/85 via-white/40 to-transparent backdrop-blur-[2px]",
         "lg:left-[327px] lg:pr-3"
       )}
@@ -345,7 +352,10 @@ function ZeroState() {
   return (
     <div
       data-figma-node="2:10577"
-      className="flex min-h-[calc(100vh-128px)] w-full flex-col items-center justify-center gap-8 px-4 text-center"
+      /* Mobile (Figma 19:309) keeps the same composition but trims the
+         top/bottom padding so the centered group sits visibly above the
+         floating tab bar. */
+      className="flex min-h-[calc(100vh-128px)] w-full flex-col items-center justify-center gap-6 px-4 pb-24 text-center sm:gap-8 sm:pb-0"
     >
       {/* Inner [illustration + text] group — Figma 2:10579, gap-12 */}
       <div className="flex flex-col items-center gap-3">
@@ -401,11 +411,17 @@ function ZeroState() {
    All sub-element offsets copied verbatim from the Figma frame. */
 
 function EmptyIllustration() {
+  /* Figma desktop spec is 300x300 (2:9318) and mobile is 220x220 (I19:312).
+     The inner layers all use calc(50% + Xpx) offsets that don't scale with
+     the container, so we render at the 300x300 spec and uniformly shrink
+     the whole composition down on mobile via a CSS scale transform.
+     Ratio: 220 / 300 = 0.7333 — keeps the artwork pixel-perfect at any size. */
   return (
     <div
       data-figma-node="2:9318"
-      className="relative size-[260px] shrink-0 overflow-visible sm:size-[300px]"
+      className="relative size-[220px] shrink-0 sm:size-[300px]"
     >
+      <div className="absolute left-1/2 top-1/2 size-[300px] origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.7333] sm:scale-100">
       {/* 1. Background blob — Figma 2:9320 */}
       <Image
         src="/brand/empty-bg.svg"
@@ -488,6 +504,7 @@ function EmptyIllustration() {
         }}
         data-figma-node="2:9343"
       />
+      </div>
     </div>
   );
 }

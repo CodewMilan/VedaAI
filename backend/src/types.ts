@@ -92,3 +92,32 @@ export interface SocketAssignmentEvent {
   result?: GeneratedPaper;
   error?: string;
 }
+
+/* ─────────── Groups (My Groups feature) ─────────── */
+
+export const GroupColorSchema = z.enum([
+  "orange",
+  "blue",
+  "green",
+  "purple",
+  "pink",
+  "yellow",
+]);
+export type GroupColor = z.infer<typeof GroupColorSchema>;
+
+export const CreateGroupSchema = z.object({
+  name: z.string().min(1).max(80),
+  classGrade: z.string().max(30).optional().or(z.literal("")),
+  section: z.string().max(10).optional().or(z.literal("")),
+  subject: z.string().max(80).optional().or(z.literal("")),
+  studentCount: z.coerce.number().int().min(0).max(1000).optional(),
+  color: GroupColorSchema.default("orange"),
+  description: z.string().max(280).optional().or(z.literal("")),
+});
+export type CreateGroupInput = z.infer<typeof CreateGroupSchema>;
+
+export const UpdateGroupSchema = CreateGroupSchema.partial();
+
+export const AssignToGroupsSchema = z.object({
+  assignmentIds: z.array(z.string()).min(1),
+});

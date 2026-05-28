@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -38,9 +38,10 @@ function SignInSkeleton() {
 }
 
 function SignInInner() {
-  const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next") || "/";
+  /* Guard against open redirects — only allow same-origin relative paths */
+  const rawNext = search.get("next") || "/";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
   const [step, setStep] = React.useState<"email" | "otp">("email");
   const [email, setEmail] = React.useState("");
@@ -106,11 +107,15 @@ function SignInInner() {
       });
       if (error) throw error;
       toast.success("Welcome!");
-      router.replace(next);
-      router.refresh();
+      /* Hard navigation — `router.replace()` + `router.refresh()` triggers
+         two sequential Supabase cookie-validation round-trips and a
+         reconciliation between stale client state and fresh server SSR,
+         which causes the visible 2-3 s "verified, then waiting" stall.
+         A full reload sends the freshly-set auth cookie once and gets a
+         single, snappy SSR pass. */
+      window.location.replace(next);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Invalid code");
-    } finally {
       setVerifying(false);
     }
   }

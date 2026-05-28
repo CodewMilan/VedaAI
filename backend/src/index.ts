@@ -6,6 +6,7 @@ import { env } from "./config/env";
 import { connectDb } from "./config/db";
 import { connectRedis } from "./config/redis";
 import { assignmentsRouter } from "./routes/assignments";
+import { groupsRouter } from "./routes/groups";
 import { initSocket } from "./realtime/socket";
 import { startSocketBridge } from "./realtime/socketBridge";
 
@@ -46,6 +47,7 @@ async function main() {
     res.json({ ok: true, env: env.nodeEnv, time: new Date().toISOString() })
   );
   app.use("/api/assignments", assignmentsRouter);
+  app.use("/api/groups", groupsRouter);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("[error]", err);

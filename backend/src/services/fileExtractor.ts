@@ -1,34 +1,28 @@
-import fs from "fs/promises";
-import path from "path";
-
 /**
- * Extract plain text from an uploaded file (PDF or text).
+ * Extract plain text from an uploaded file (PDF or text) directly from a Buffer.
+ * Buffer-based so it works on platforms with ephemeral / read-only filesystems
+ * (Railway, Render, Vercel) without ever writing the upload to disk.
  * Returns at most 20,000 chars to keep prompts within budget.
  */
 export async function extractText(
-  filePath: string,
-  mimeType: string
+  buffer: Buffer,
+  mimeType: string,
+  filename = ""
 ): Promise<string> {
-  if (!filePath) return "";
-  const ext = path.extname(filePath).toLowerCase();
+  if (!buffer?.length) return "";
 
   try {
-    if (mimeType === "application/pdf" || ext === ".pdf") {
-      // Lazy import — pdf-parse loads test fixtures at module load otherwise.
+    if (mimeType === "application/pdf" || /\.pdf$/i.test(filename)) {
       const pdfParse = (await import("pdf-parse")).default;
-      const buf = await fs.readFile(filePath);
-      const data = await pdfParse(buf);
+      const data = await pdfParse(buffer);
       return (data.text ?? "").slice(0, 20000);
     }
 
     if (
       mimeType.startsWith("text/") ||
-      ext === ".txt" ||
-      ext === ".md" ||
-      ext === ".csv"
+      /\.(txt|md|csv)$/i.test(filename)
     ) {
-      const text = await fs.readFile(filePath, "utf8");
-      return text.slice(0, 20000);
+      return buffer.toString("utf8").slice(0, 20000);
     }
   } catch (err) {
     console.error("[extractText] failed:", err);

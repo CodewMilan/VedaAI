@@ -73,6 +73,8 @@ export interface Assignment {
     sizeBytes: number;
     hasExtractedText: boolean;
   };
+  /* Ids of every Group this assignment has been assigned to. Empty by default. */
+  groupIds?: string[];
   status: AssignmentStatus;
   progress: number;
   stage?: string;
@@ -82,6 +84,66 @@ export interface Assignment {
   createdAt: string;
   updatedAt: string;
 }
+
+export type GroupColor =
+  | "orange"
+  | "blue"
+  | "green"
+  | "purple"
+  | "pink"
+  | "yellow";
+
+export interface Group {
+  id: string;
+  name: string;
+  classGrade?: string;
+  section?: string;
+  subject?: string;
+  studentCount?: number;
+  color: GroupColor;
+  description?: string;
+  assignmentCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupWithAssignments extends Group {
+  assignments: Assignment[];
+}
+
+export interface CreateGroupInput {
+  name: string;
+  classGrade?: string;
+  section?: string;
+  subject?: string;
+  studentCount?: number;
+  color: GroupColor;
+  description?: string;
+}
+
+export const GROUP_COLOR_LABELS: Record<GroupColor, string> = {
+  orange: "Sunset",
+  blue: "Ocean",
+  green: "Forest",
+  purple: "Plum",
+  pink: "Rose",
+  yellow: "Sand",
+};
+
+/* Hex pairs chosen to harmonise with the existing brand palette
+   ([orange, dark grey, etc.]). Background tints are the swatch shown on
+   the group card; foreground is used for chips/labels. */
+export const GROUP_COLOR_TOKENS: Record<
+  GroupColor,
+  { bg: string; bgSoft: string; fg: string; ring: string }
+> = {
+  orange: { bg: "#ff5623", bgSoft: "#fff0ea", fg: "#c2410c", ring: "#ffd6c5" },
+  blue:   { bg: "#2563eb", bgSoft: "#eaf1ff", fg: "#1e40af", ring: "#c7d8ff" },
+  green:  { bg: "#16a34a", bgSoft: "#e7f7ed", fg: "#166534", ring: "#bde7c9" },
+  purple: { bg: "#7c3aed", bgSoft: "#f1ebff", fg: "#5b21b6", ring: "#d8c8ff" },
+  pink:   { bg: "#db2777", bgSoft: "#fde7f1", fg: "#9d174d", ring: "#f8c2da" },
+  yellow: { bg: "#ca8a04", bgSoft: "#fef6dc", fg: "#854d0e", ring: "#f3deaa" },
+};
 
 export interface SocketAssignmentEvent {
   assignmentId: string;

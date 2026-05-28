@@ -1,4 +1,9 @@
-import type { Assignment } from "./types";
+import type {
+  Assignment,
+  CreateGroupInput,
+  Group,
+  GroupWithAssignments,
+} from "./types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
@@ -51,6 +56,71 @@ export async function deleteAssignment(id: string): Promise<void> {
     method: "DELETE",
   });
   if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+}
+
+/* ─────────── Groups ─────────── */
+
+export async function listGroups(): Promise<Group[]> {
+  const res = await fetch(`${API_BASE}/api/groups`, { cache: "no-store" });
+  return jsonOrThrow<Group[]>(res);
+}
+
+export async function getGroup(id: string): Promise<GroupWithAssignments> {
+  const res = await fetch(`${API_BASE}/api/groups/${id}`, {
+    cache: "no-store",
+  });
+  return jsonOrThrow<GroupWithAssignments>(res);
+}
+
+export async function createGroup(input: CreateGroupInput): Promise<Group> {
+  const res = await fetch(`${API_BASE}/api/groups`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return jsonOrThrow<Group>(res);
+}
+
+export async function updateGroup(
+  id: string,
+  input: Partial<CreateGroupInput>
+): Promise<Group> {
+  const res = await fetch(`${API_BASE}/api/groups/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return jsonOrThrow<Group>(res);
+}
+
+export async function deleteGroup(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/groups/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+}
+
+export async function assignAssignmentsToGroup(
+  groupId: string,
+  assignmentIds: string[]
+): Promise<{ groupId: string; assignments: Assignment[] }> {
+  const res = await fetch(`${API_BASE}/api/groups/${groupId}/assignments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ assignmentIds }),
+  });
+  return jsonOrThrow<{ groupId: string; assignments: Assignment[] }>(res);
+}
+
+export async function unassignAssignmentFromGroup(
+  groupId: string,
+  assignmentId: string
+): Promise<void> {
+  const res = await fetch(
+    `${API_BASE}/api/groups/${groupId}/assignments/${assignmentId}`,
+    { method: "DELETE" }
+  );
+  if (!res.ok) throw new Error(`Unassign failed: ${res.status}`);
 }
 
 export const API = { API_BASE };

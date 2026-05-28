@@ -73,6 +73,10 @@ const AssignmentSchema = new Schema(
     },
     additionalInstructions: String,
     uploadedMaterial: UploadedMaterialSchema,
+    /* Many-to-many link to Group documents. Stored on the assignment side
+       so listing "assignments for a group" is a single indexed query
+       (`Assignment.find({ groupIds: groupId })`) and we don't risk drift. */
+    groupIds: { type: [Schema.Types.ObjectId], default: [], index: true, ref: "Group" },
     status: {
       type: String,
       enum: ["draft", "queued", "processing", "completed", "failed"],

@@ -186,10 +186,11 @@ function serialise(doc: any) {
 }
 
 function serialiseLean(doc: any) {
-  const { _id, __v, uploadedMaterial, ...rest } = doc;
+  const { _id, __v, uploadedMaterial, groupIds, ...rest } = doc;
   return {
     id: String(_id),
     ...rest,
+    groupIds: Array.isArray(groupIds) ? groupIds.map(String) : [],
     uploadedMaterial: uploadedMaterial
       ? {
           filename: uploadedMaterial.filename,
