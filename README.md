@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/brand/logo-v.svg" alt="VedaAI" width="84" height="84" />
+<img src="frontend/public/icon.png" alt="VedaAI" width="96" height="96" />
 
 # VedaAI — AI Assessment Creator
 
@@ -19,8 +19,34 @@ Fill in a form, optionally drop a PDF of reference material, and the system stre
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
 </p>
 
-<!-- Drop a hero banner / animated GIF here. See docs/screenshots/README.md. -->
-<!-- ![VedaAI](docs/screenshots/hero.png) -->
+<br />
+
+<img src="docs/screenshots/dashboard.png" alt="VedaAI dashboard" width="900" />
+
+<sub><em>Dashboard — assignment cards with real‑time status, filter, search & regenerate</em></sub>
+
+<br />
+<br />
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/screenshots/create-form.png" alt="Create assignment form" width="100%" />
+      <br />
+      <sub><b>Create Assignment</b><br/>Reference upload, typed fields, AI‑driven question mix</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/screenshots/groups.png" alt="Groups detail view" width="100%" />
+      <br />
+      <sub><b>Groups</b><br/>Link papers to classes, batch‑assign and track</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/screenshots/settings.png" alt="Settings page" width="100%" />
+      <br />
+      <sub><b>Profile & Settings</b><br/>Supabase user metadata, editable inline</sub>
+    </td>
+  </tr>
+</table>
 
 </div>
 
@@ -353,8 +379,9 @@ Open <http://localhost:3000>. If Supabase isn't configured the app skips auth en
 
 ### Dashboard — zero & filled states
 
-<!-- ![Empty dashboard](docs/screenshots/dashboard-empty.png) -->
-<!-- ![Filled dashboard with cards](docs/screenshots/dashboard-filled.png) -->
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Filled assignments dashboard with PHYSICS card" width="900" />
+</p>
 
 The dashboard is rendered in two distinct modes:
 
@@ -365,8 +392,9 @@ Each card has a 3‑dot menu (View / Regenerate / Delete) and inline status: a p
 
 ### Create assignment form
 
-<!-- ![Create form, top of form](docs/screenshots/create-form.png) -->
-<!-- ![Create form, difficulty slider](docs/screenshots/create-form-difficulty.png) -->
+<p align="center">
+  <img src="docs/screenshots/create-form.png" alt="Create assignment form — file upload, due date, question types" width="900" />
+</p>
 
 A single multi‑section form built with `react-hook-form` + Zod:
 
@@ -424,9 +452,26 @@ Passwordless email sign‑in with a custom 6‑digit OTP input (auto‑advance, 
 
 The middleware (`frontend/src/middleware.ts` → `lib/supabase/middleware.ts`) handles route protection: every non‑`/auth` route requires a session, and signed‑in users hitting `/auth` get bounced back home. If Supabase env vars are missing the middleware no‑ops, so the project stays fully runnable for a reviewer who doesn't want to wire up Supabase.
 
+### Groups — class management
+
+<p align="center">
+  <img src="docs/screenshots/groups.png" alt="Group detail page with assigned papers" width="900" />
+</p>
+
+Teachers can group students into classes (e.g. "Class 5 Physics") and link any number of assignments to a group:
+
+- **Create / edit / delete** groups with class, grade, subject, student count, and a colour accent.
+- **Assign one or more papers** to a group via `POST /api/groups/:id/assignments` — the assignment's `groupIds` array is updated atomically with `$addToSet`.
+- **Group detail view** shows the assignment cards belonging to that group with their live status, due date, and 3‑dot actions.
+- Deleting a group cleanly **unlinks it from every assignment** (`$pull`) and invalidates the per‑assignment cache so list views never serve a stale `groupIds`.
+
+This is the same `assignments[]` payload the dashboard uses, just filtered server‑side — so all the real‑time progress wiring, regenerate flow, and validation continues to work inside a group.
+
 ### Settings page
 
-<!-- ![Settings page](docs/screenshots/settings.png) -->
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="Settings page — profile, email, sign out" width="900" />
+</p>
 
 Edit name + school (writes back to Supabase `user_metadata` via `supabase.auth.updateUser`), view fixed email, and sign out.
 
@@ -450,7 +495,8 @@ VedaAI/
 ├── docker-compose.yml                # MongoDB + Redis
 ├── README.md                         # ← you're reading this
 ├── docs/
-│   └── screenshots/                  # README image targets (see docs/screenshots/README.md)
+│   ├── screenshots/                  # README image targets (see docs/screenshots/README.md)
+│   └── supabase/                     # Branded email templates (magic-link.html)
 ├── backend/
 │   ├── .env.example
 │   ├── package.json
@@ -486,8 +532,11 @@ VedaAI/
     ├── tailwind.config.ts
     ├── tsconfig.json
     ├── public/
-    │   ├── favicon.svg
-    │   └── brand/                    # Logo + empty-state illustrations
+    │   ├── favicon.png               # 88×88 PNG favicon (primary)
+    │   ├── favicon.svg               # SVG fallback
+    │   ├── apple-icon.png            # 88×124 with drop-shadow for iOS
+    │   ├── icon.png                  # Master icon (referenced from README)
+    │   └── brand/                    # Inline logo + empty-state illustrations
     └── src/
         ├── middleware.ts             # Supabase session refresh + auth gate
         ├── app/
@@ -502,7 +551,9 @@ VedaAI/
         │   │   ├── layout.tsx
         │   │   └── signin/page.tsx   # Email + OTP
         │   ├── settings/page.tsx
-        │   ├── groups/page.tsx       # (UI roadmapped — see §20)
+        │   ├── groups/
+        │   │   ├── page.tsx          # Group list + create
+        │   │   └── [id]/page.tsx     # Group detail + assigned papers
         │   ├── library/page.tsx      # (UI roadmapped)
         │   ├── toolkit/page.tsx      # (UI roadmapped)
         │   └── not-found.tsx
@@ -768,6 +819,7 @@ The system is designed so the only stateful tier is **MongoDB + Redis**. Everyth
 ## 18 · Authentication & route protection
 
 - **Email OTP via Supabase.** New users get a 6‑digit code in their inbox; profile metadata (`full_name`, `school`) is captured at signup and editable from `/settings`.
+- **Branded sign-in email.** A custom HTML template lives at [`docs/supabase/magic-link.html`](docs/supabase/magic-link.html) — drop it into **Supabase Dashboard → Authentication → Email Templates → Magic Link** (and Confirm signup). The OTP digits are rendered in monospace pure black for scan-ability; the brand only shows in the icon at the top.
 - **Middleware‑based route protection.** `frontend/src/middleware.ts` redirects unauthenticated visitors to `/auth/signin?next=<original-path>`; signed‑in users hitting `/auth/*` are bounced to home. Open‑redirect protection only allows same‑origin relative paths in `?next`.
 - **Graceful degradation.** When Supabase env vars are missing, the middleware no‑ops and the entire app stays usable.
 - **Session refresh.** The middleware refreshes the Supabase auth cookie on every request, so SSR has a valid session without round‑trip flicker.
@@ -792,7 +844,7 @@ The backend already ships a few features whose UI is still in flight:
 
 | Surface              | Status                                                                                              |
 | -------------------- | --------------------------------------------------------------------------------------------------- |
-| **My Groups** UI     | Backend complete (`/api/groups` CRUD + assign/unassign + cache invalidation). UI is a coming‑soon placeholder. |
+| **My Groups** UI     | ✅ Shipped — list + detail views with create/edit/delete, batch assign/unassign, and per‑group paper status. |
 | **My Library** UI    | Planned — reusable question bank + reference material storage.                                      |
 | **AI Toolkit** UI    | Planned — auto‑grading, lesson plans, flashcards, multi‑level explanations.                         |
 | **Tests**            | The data layer is small and well‑typed; unit tests for `promptBuilder`, `aiClient` (repair pass), and `mockGenerator` would be the next addition. |

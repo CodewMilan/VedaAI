@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<!--
+  VedaAI — Supabase Email Template (Magic Link / OTP)
+  ────────────────────────────────────────────────────
+  Paste this into:  Supabase Dashboard → Authentication → Email Templates → Magic Link
+                    (and also "Confirm signup" if you want consistent branding)
+
+  Variables used:
+    {{ .Token }}           — the 6-digit OTP
+    {{ .ConfirmationURL }} — magic-link fallback (single-click sign-in)
+    {{ .Email }}           — the recipient's email
+    {{ .SiteURL }}         — your project's site URL (set in Supabase Auth settings)
+
+  Icon URL:
+    Replace the `LOGO_URL` value below with your deployed app URL if it isn't
+    https://veda-milan-assignment.vercel.app. The image must be publicly
+    reachable — Gmail and Outlook block data: URIs in <img>.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Your VedaAI sign-in code</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      background: #f4f3ef;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+        Arial, sans-serif;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    "
+  >
+    <!-- Preheader (preview text in the inbox list) -->
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        mso-hide: all;
+        font-size: 1px;
+        line-height: 1px;
+        color: #f4f3ef;
+      "
+    >
+      Your one-time code is {{ .Token }}. Enter it in VedaAI to sign in.
+    </div>
+
+    <!-- Outer wrapper -->
+    <table
+      role="presentation"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      style="background: #f4f3ef; padding: 40px 16px;"
+    >
+      <tr>
+        <td align="center">
+          <!-- Card -->
+          <table
+            role="presentation"
+            width="560"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              width: 100%;
+              max-width: 560px;
+              background: #ffffff;
+              border: 1px solid #ececec;
+              border-radius: 20px;
+              overflow: hidden;
+              box-shadow: 0 1px 2px rgba(15, 15, 15, 0.04);
+            "
+          >
+            <!-- Top padding -->
+            <tr>
+              <td style="padding: 40px 40px 0 40px;" align="center">
+                <!-- App icon -->
+                <img
+                  src="https://veda-milan-assignment.vercel.app/icon.png"
+                  width="72"
+                  height="72"
+                  alt="VedaAI"
+                  style="
+                    display: block;
+                    width: 72px;
+                    height: 72px;
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
+                    border-radius: 16px;
+                  "
+                />
+              </td>
+            </tr>
+
+            <!-- Product name -->
+            <tr>
+              <td align="center" style="padding: 16px 40px 0 40px;">
+                <div
+                  style="
+                    font-size: 14px;
+                    line-height: 1;
+                    font-weight: 600;
+                    letter-spacing: -0.01em;
+                    color: #5e5e5e;
+                    text-transform: none;
+                  "
+                >
+                  VedaAI
+                </div>
+              </td>
+            </tr>
+
+            <!-- Headline -->
+            <tr>
+              <td align="center" style="padding: 28px 40px 0 40px;">
+                <h1
+                  style="
+                    margin: 0;
+                    font-size: 26px;
+                    line-height: 1.2;
+                    font-weight: 700;
+                    letter-spacing: -0.02em;
+                    color: #1a1a1a;
+                  "
+                >
+                  Your sign-in code
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Sub-headline -->
+            <tr>
+              <td align="center" style="padding: 12px 40px 0 40px;">
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 15px;
+                    line-height: 1.55;
+                    color: #5e5e5e;
+                  "
+                >
+                  Enter this 6-digit code in VedaAI to verify your email
+                  address and sign in.
+                </p>
+              </td>
+            </tr>
+
+            <!-- OTP code — black, bold, big, generous letter spacing -->
+            <tr>
+              <td align="center" style="padding: 32px 40px 0 40px;">
+                <table
+                  role="presentation"
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="
+                        background: #f7f7f5;
+                        border: 1px solid #ececec;
+                        border-radius: 14px;
+                        padding: 22px 28px;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family: ui-monospace, 'SF Mono', 'Menlo',
+                            'Consolas', 'Liberation Mono', monospace;
+                          font-size: 38px;
+                          line-height: 1;
+                          font-weight: 700;
+                          letter-spacing: 0.32em;
+                          color: #000000;
+                          text-align: center;
+                          padding-left: 0.32em;
+                        "
+                      >
+                        {{ .Token }}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Expiry note -->
+            <tr>
+              <td align="center" style="padding: 16px 40px 0 40px;">
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 13px;
+                    line-height: 1.5;
+                    color: #8a8a8a;
+                  "
+                >
+                  This code expires in 60 minutes.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Divider -->
+            <tr>
+              <td style="padding: 32px 40px 0 40px;">
+                <table
+                  role="presentation"
+                  width="100%"
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td
+                      style="
+                        border-top: 1px solid #ececec;
+                        line-height: 1px;
+                        font-size: 1px;
+                        height: 1px;
+                      "
+                    >
+                      &nbsp;
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Magic-link fallback -->
+            <tr>
+              <td style="padding: 24px 40px 0 40px;">
+                <p
+                  style="
+                    margin: 0 0 14px 0;
+                    font-size: 14px;
+                    line-height: 1.55;
+                    color: #5e5e5e;
+                  "
+                >
+                  Or, sign in with a single click instead:
+                </p>
+                <a
+                  href="{{ .ConfirmationURL }}"
+                  style="
+                    display: inline-block;
+                    background: #1a1a1a;
+                    color: #ffffff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 600;
+                    line-height: 1;
+                    padding: 13px 22px;
+                    border-radius: 999px;
+                    letter-spacing: -0.01em;
+                  "
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Sign in to VedaAI →
+                </a>
+              </td>
+            </tr>
+
+            <!-- Safety note -->
+            <tr>
+              <td style="padding: 28px 40px 40px 40px;">
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 12px;
+                    line-height: 1.55;
+                    color: #8a8a8a;
+                  "
+                >
+                  Didn't try to sign in? You can safely ignore this email —
+                  your account stays untouched. Codes can only be used once
+                  and never reveal your password (there isn't one).
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Footer -->
+          <table
+            role="presentation"
+            width="560"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            style="width: 100%; max-width: 560px; margin-top: 20px;"
+          >
+            <tr>
+              <td align="center">
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 12px;
+                    line-height: 1.5;
+                    color: #9a9a9a;
+                  "
+                >
+                  Sent to {{ .Email }} · VedaAI · AI Assessment Creator
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
