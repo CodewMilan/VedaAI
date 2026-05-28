@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 19%;          /* #303030 */
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 19%;
+
+    /* Primary = Orange #FF5623 */
+    --primary: 15 100% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary = off-white #F0F0F0 */
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 19%;
+
+    /* Muted */
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 37%;    /* #5E5E5E */
+
+    /* Accent = light orange */
+    --accent: 15 100% 96%;
+    --accent-foreground: 15 100% 44%;
+
+    /* Destructive */
+    --destructive: 0 64% 47%;        /* #C53535 */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border: 0 0% 89%;
+    --input: 0 0% 87%;
+    --ring: 15 100% 56%;
+
+    /* Semantic */
+    --success: 152 64% 42%;
+    --warning: 35 92% 52%;
+    --danger: 0 64% 47%;
+
+    --radius: 0.875rem;
+
+    /* Brand */
+    --brand: 15 100% 56%;
+    --brand-warm: 18 75% 51%;
+    --ink: 0 0% 9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01", "ss02";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: linear-gradient(180deg, #eeeeee 0%, #dadada 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Tighter tracking only for true display headings — body should breathe. */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty;  }
+
+  .sidebar-shadow {
+    box-shadow:
+      0px 32px 48px rgba(0, 0, 0, 0.12),
+      0px 12px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-shadow {
+    box-shadow:
+      0 1px 2px rgba(15, 15, 15, 0.04),
+      0 8px 24px -12px rgba(15, 15, 15, 0.08);
+  }
+
+  .card-shadow-hover {
+    box-shadow:
+      0 1px 2px rgba(15, 15, 15, 0.05),
+      0 12px 32px -12px rgba(15, 15, 15, 0.14);
+  }
+
+  /* Dark orange-bordered CTA pill (used for the brand "Create Assignment" button) */
+  .pill-cta {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border-[3px] border-[#ff7950] px-5 py-2.5 text-[15px] font-medium text-white;
+    transition: transform 100ms ease-out, box-shadow 150ms ease-out;
+  }
+  .pill-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: #272727;
+  }
+  .pill-cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    box-shadow:
+      inset 0 -1px 3.5px rgba(177,177,177,0.6),
+      inset 0 0 34.5px rgba(255,255,255,0.25);
+    pointer-events: none;
+  }
+  .pill-cta > * { position: relative; z-index: 1; }
+  .pill-cta:hover { transform: translateY(-1px); }
+  .pill-cta:active { transform: translateY(0); }
+
+  .scroll-shadow-x {
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      black 24px,
+      black calc(100% - 24px),
+      transparent 100%
+    );
+  }
+}
+
+@layer components {
+  .paper-page {
+    @apply rounded-2xl bg-white shadow-[0_1px_2px_0_rgb(0_0_0_/_0.04),_0_8px_24px_-12px_rgb(15_15_15_/_0.08)];
+  }
+}
+
+/* Reduced motion: cut all non-essential transitions/animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles for PDF export */
+@media print {
+  body {
+    background: white !important;
+    background-image: none !important;
+  }
+  .no-print { display: none !important; }
+  .print-page { @apply shadow-none; page-break-inside: avoid; }
+  .print-section { break-inside: avoid; }
+  @page {
+    margin: 18mm 16mm;
+    size: A4;
+  }
+}

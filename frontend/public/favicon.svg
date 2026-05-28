@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background gradient: matches brand #e56820 → #d45e3e top-to-bottom -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#e56820"/>
+      <stop offset="100%" stop-color="#c4512e"/>
+    </linearGradient>
+    <!-- Radial highlight in top-left to mimic Figma's image overlay shine -->
+    <radialGradient id="shine" cx="32%" cy="18%" r="65%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Sheen that gives the left V-arm a folded-paper shadow -->
+    <linearGradient id="sheen"
+      x1="34.7749" y1="11.2061"
+      x2="34.7749" y2="33.9908"
+      gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="33%"  stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="76%"  stop-color="#0E1513" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0E1513" stop-opacity="1"/>
+    </linearGradient>
+    <clipPath id="bounds">
+      <rect width="64" height="64" rx="16"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background: rounded square with correct Figma corner-radius scaling (15/40 × 64 = 24) -->
+  <rect width="64" height="64" rx="24" fill="url(#bg)"/>
+
+  <!-- Radial shine overlay -->
+  <rect width="64" height="64" rx="24" fill="url(#shine)"/>
+
+  <!--
+    V paths are in original Figma coords:
+      bounding box  x=[25.7143, 53.7138]  w=28
+                    y=[12.8571, 32.2789]  h=19.4218
+    We want V at 70% of 64px = 44.8px wide, centered:
+      scale = 44.8/28 = 1.6
+      left  = (64 - 44.8)/2 = 9.6
+      top   = (64 - 19.4218×1.6)/2 = (64 - 31.07)/2 = 16.47
+    transform: translate(9.6 - 25.7143×1.6 , 16.47 - 12.8571×1.6) scale(1.6)
+             = translate(-31.543, -4.101) scale(1.6)
+  -->
+  <g clip-path="url(#bounds)" transform="translate(-31.543 -4.101) scale(1.6)">
+    <!-- left arm -->
+    <path fill-rule="evenodd" clip-rule="evenodd"
+      d="M42.4413 30.2153C42.4413 30.2153 43.1688 32.1573 43.8355 32.2789H35.4112C33.7141 32.2789 32.1993 31.3079 31.714 29.487L26.805 14.9207C26.805 14.9207 26.381 13.1606 25.7143 12.8571H34.3204C36.0176 12.9179 37.1691 13.5247 37.8357 15.7706L42.4413 30.2153Z"
+      fill="#ffffff"/>
+    <!-- sheen on left arm (subtle 3-D fold) -->
+    <path opacity="0.18" fill-rule="evenodd" clip-rule="evenodd"
+      d="M42.4413 30.2153C42.4413 30.2153 43.1688 32.1573 43.8355 32.2789H35.4112C33.7141 32.2789 32.1993 31.3079 31.714 29.487L26.805 14.9207C26.805 14.9207 26.381 13.1606 25.7143 12.8571H34.3204C36.0176 12.9179 37.1691 13.5247 37.8357 15.7706L42.4413 30.2153Z"
+      fill="url(#sheen)"/>
+    <!-- right arm -->
+    <path fill-rule="evenodd" clip-rule="evenodd"
+      d="M37.0471 30.2149C37.0471 30.2149 36.3196 32.1569 35.6529 32.2784H44.0772C45.7743 32.2784 47.2891 31.3074 47.7744 29.4865L52.6231 14.9207C52.6231 14.9207 53.0471 13.1606 53.7138 12.8571H45.168C43.4709 12.8571 42.3801 13.464 41.7135 15.7098L37.0471 30.2149Z"
+      fill="#ffffff"/>
+  </g>
+</svg>
