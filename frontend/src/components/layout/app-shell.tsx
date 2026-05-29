@@ -405,7 +405,12 @@ function TopBar({
   return (
     <header
       className={cn(
-        "no-print sticky top-3 z-30 mb-5 flex h-14 items-center gap-2 overflow-hidden rounded-2xl",
+        /* NB: do NOT add `overflow-hidden` here — it clips the
+           ProfileMenu + NotificationsButton dropdowns, which are
+           absolutely-positioned children that need to escape the bar.
+           Modern browsers respect `rounded-2xl` + `backdrop-blur`
+           without `overflow-hidden`. */
+        "no-print sticky top-3 z-30 mb-5 flex h-14 items-center gap-2 rounded-2xl",
         "bg-[rgba(255,255,255,0.78)] pl-3 pr-3 backdrop-blur lg:pl-6",
         "shadow-[0_1px_2px_rgba(15,15,15,0.04)]"
       )}

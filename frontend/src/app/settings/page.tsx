@@ -9,7 +9,6 @@ import {
   LogOut,
   Mail,
   Trash2,
-  User as UserIcon,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useUser, userDisplay } from "@/lib/auth/use-user";
@@ -95,18 +94,13 @@ export default function SettingsPage() {
       <div className="mx-auto grid max-w-3xl gap-5">
         {/* Profile */}
         <section className="rounded-2xl bg-white p-6 card-shadow sm:p-8">
-          <header className="mb-6 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fff0ea] text-[#ff5623]">
-              <UserIcon className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="text-[17px] font-bold tracking-[-0.02em] text-foreground">
-                Profile
-              </h2>
-              <p className="text-[13px] text-muted-foreground">
-                Shown on your sidebar and in shared assignments.
-              </p>
-            </div>
+          <header className="mb-6">
+            <h2 className="text-[17px] font-bold tracking-[-0.02em] text-foreground">
+              Profile
+            </h2>
+            <p className="text-[13px] text-muted-foreground">
+              Shown on your sidebar and in shared assignments.
+            </p>
           </header>
 
           <AvatarUploader
