@@ -77,7 +77,7 @@ export function useUser(): UserContextValue {
 }
 
 /**
- * Pull a friendly display name + initials out of a Supabase user record.
+ * Pull a friendly display name + initials + avatar out of a Supabase user record.
  * Falls back gracefully for users who signed up before adding metadata.
  */
 export function userDisplay(user: User | null | undefined) {
@@ -98,5 +98,12 @@ export function userDisplay(user: User | null | undefined) {
     .slice(0, 2)
     .map((s: string) => s[0]?.toUpperCase() ?? "")
     .join("") || "U";
-  return { name, school, initials, email: user?.email ?? "" };
+  /* Accept either a hosted URL (Supabase Storage / Gravatar / etc.) OR a
+     base64 data URL — the Settings PFP uploader stores the latter so users
+     don't need to create a Supabase Storage bucket to test the flow. */
+  const avatarUrl =
+    (typeof meta.avatar_url === "string" && meta.avatar_url) ||
+    (typeof meta.avatar === "string" && meta.avatar) ||
+    "";
+  return { name, school, initials, email: user?.email ?? "", avatarUrl };
 }

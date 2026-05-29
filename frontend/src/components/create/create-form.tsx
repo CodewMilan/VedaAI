@@ -48,7 +48,7 @@ const QUESTION_TYPES: QuestionType[] = [
 const FormSchema = z.object({
   title: z.string().min(2, "Give it a title (≥ 2 chars)").max(200),
   subject: z.string().min(1, "Pick a subject").max(100),
-  classGrade: z.string().max(50).optional(),
+  classGrade: z.string().min(1, "Pick a class / grade").max(50),
   dueDate: z
     .string()
     .min(1, "Pick a due date")
@@ -488,12 +488,20 @@ function Step2({
             <option value="Economics" />
           </datalist>
 
-          <PillField
-            label="Class / Grade"
-            hint="optional"
-            error={errors.classGrade?.message}
-            placeholder="e.g. Grade 10 — Section A"
-            {...register("classGrade")}
+          <Controller
+            control={control}
+            name="classGrade"
+            render={({ field }) => (
+              <PillSelect
+                label="Class / Grade"
+                required
+                error={errors.classGrade?.message}
+                placeholder="Select a grade"
+                options={CLASS_GRADE_OPTIONS}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
 
@@ -835,7 +843,15 @@ function QuestionTypesSection({
         </div>
       </div>
 
-      {/* ── Mobile layout: stacked ── */}
+      {/* ── Mobile layout — strictly matches Figma node 19:677 ──
+            ┌─ white card, rounded-24, p-3 ───────────────────────────┐
+            │  [ Question type ▼ ]              [ × ]                  │
+            │  ┌─ gray container, #f0f0f0, rounded-24, p-2, gap-3 ─┐  │
+            │  │ ┌── No. of Questions ──┐  ┌──── Marks ──────────┐ │  │
+            │  │ │ [ − ]    4    [ + ] │  │ [ − ]    4    [ + ] │ │  │
+            │  │ └─────────────────────┘  └─────────────────────┘ │  │
+            │  └──────────────────────────────────────────────────┘  │
+            └────────────────────────────────────────────────────────┘ */}
       <div className="flex flex-col gap-4 md:hidden">
         <label
           className="text-[16px] font-bold tracking-[-0.04em] text-[#303030]"
@@ -849,13 +865,16 @@ function QuestionTypesSection({
           return (
             <div
               key={qt.type}
-              className="rounded-2xl bg-white/70 p-3 flex flex-col gap-3"
+              data-figma-node="19:681"
+              className="flex flex-col gap-3 rounded-[24px] bg-white p-3"
             >
-              <div className="flex items-center gap-3">
+              {/* Top row: type dropdown + remove button (Figma 19:682) */}
+              <div className="flex items-center justify-between gap-3">
                 <QuestionTypeDropdown
                   value={qt.type}
                   onChange={(next) => changeType(idx, next)}
                   isDisabledOption={usedElsewhere}
+                  variant="ghost"
                 />
                 <button
                   type="button"
@@ -867,9 +886,17 @@ function QuestionTypesSection({
                   <X className="h-4 w-4" strokeWidth={2.2} />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[12px] font-medium text-[#5e5e5e]">
+
+              {/* Stepper container — gray bg, holds the two columns (Figma 19:687) */}
+              <div
+                data-figma-node="19:687"
+                className="flex items-start gap-3 rounded-[24px] bg-[#f0f0f0] p-2"
+              >
+                <div className="flex flex-1 flex-col items-center gap-2 min-w-0">
+                  <span
+                    className="text-center text-[14px] font-medium tracking-[-0.04em] text-[#303030]"
+                    style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+                  >
                     No. of Questions
                   </span>
                   <Controller
@@ -881,12 +908,17 @@ function QuestionTypesSection({
                         onChange={field.onChange}
                         min={1}
                         max={50}
+                        fullWidth
+                        ariaLabel={`${QUESTION_TYPE_LABELS[qt.type]} count`}
                       />
                     )}
                   />
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[12px] font-medium text-[#5e5e5e]">
+                <div className="flex flex-1 flex-col items-center gap-2 min-w-0">
+                  <span
+                    className="text-center text-[14px] font-medium tracking-[-0.04em] text-[#303030]"
+                    style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+                  >
                     Marks
                   </span>
                   <Controller
@@ -898,6 +930,8 @@ function QuestionTypesSection({
                         onChange={field.onChange}
                         min={1}
                         max={50}
+                        fullWidth
+                        ariaLabel={`${QUESTION_TYPE_LABELS[qt.type]} marks`}
                       />
                     )}
                   />
@@ -936,16 +970,24 @@ function QuestionTypesSection({
 }
 
 /* Custom dropdown for picking the question type — pill shaped, white bg.
-   Figma 2:9477. Renders all known types; ones already used in other rows
-   are disabled so the user can't pick a duplicate. */
+   Figma 2:9477 (desktop, pill chip) and 19:683 (mobile, ghost inside white card).
+
+   `variant`:
+     • "pill"  — default, rounded white pill with hover shadow (desktop).
+     • "ghost" — no chrome, just the label + chevron, fitting flush inside
+                 a white container (mobile, Figma 19:683). The chevron sits
+                 directly after the label rather than far-right, matching
+                 the Figma "Multiple Choice Questions ⌄" lockup. */
 function QuestionTypeDropdown({
   value,
   onChange,
   isDisabledOption,
+  variant = "pill",
 }: {
   value: QuestionType;
   onChange: (t: QuestionType) => void;
   isDisabledOption: (t: QuestionType) => boolean;
+  variant?: "pill" | "ghost";
 }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -967,23 +1009,30 @@ function QuestionTypeDropdown({
   }, [open]);
 
   return (
-    <div className="relative flex-1 min-w-0" ref={ref}>
+    <div className={cn("relative min-w-0", variant === "pill" ? "flex-1" : "flex-1 max-w-full")} ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          "flex h-11 w-full items-center justify-between rounded-full bg-white px-4 text-left text-[16px] font-medium tracking-[-0.04em] text-[#303030]",
-          "transition-shadow duration-150 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5623] focus-visible:ring-offset-2"
+          "flex items-center text-left text-[#303030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5623] focus-visible:ring-offset-2",
+          variant === "pill" && [
+            "h-11 w-full justify-between rounded-full bg-white px-4 text-[16px] font-medium tracking-[-0.04em]",
+            "transition-shadow duration-150 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
+          ],
+          variant === "ghost" && [
+            "h-auto justify-start gap-6 rounded-md text-[14px] font-medium tracking-[-0.04em]",
+            "py-0.5 transition-colors duration-150 hover:text-[#000]",
+          ]
         )}
         style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
       >
         <span className="truncate">{QUESTION_TYPE_LABELS[value]}</span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-[#303030] transition-transform duration-150",
+            "shrink-0 text-[#303030] transition-transform duration-150",
+            variant === "pill" ? "h-4 w-4" : "h-4 w-4",
             open && "rotate-180"
           )}
           strokeWidth={2.2}
@@ -993,7 +1042,10 @@ function QuestionTypeDropdown({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-12 z-40 w-full overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_16px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.06)]"
+          className={cn(
+            "absolute left-0 z-40 overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_16px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.06)]",
+            variant === "pill" ? "top-12 w-full" : "top-7 w-[240px] max-w-[80vw]"
+          )}
         >
           {QUESTION_TYPES.map((t) => {
             const disabled = isDisabledOption(t) && t !== value;
@@ -1034,18 +1086,25 @@ function FigmaStepper({
   min = 1,
   max = 50,
   ariaLabel,
+  fullWidth = false,
 }: {
   value: number;
   onChange: (n: number) => void;
   min?: number;
   max?: number;
   ariaLabel?: string;
+  /** True = mobile variant (Figma 19:690): pill fills its column, number
+   *  centred between −/+ icons that hug the edges. */
+  fullWidth?: boolean;
 }) {
   return (
     <div
       role="group"
       aria-label={ariaLabel}
-      className="flex h-11 w-[100px] items-center justify-between rounded-full bg-white px-2"
+      className={cn(
+        "flex h-10 items-center justify-between rounded-full bg-white",
+        fullWidth ? "w-full px-2" : "w-[100px] px-2"
+      )}
     >
       <button
         type="button"
@@ -1245,3 +1304,166 @@ const PillField = React.forwardRef<HTMLInputElement, PillFieldProps>(
     );
   }
 );
+
+/* ─────────────────────────────────────────────────────────────────
+   Class / Grade options + PillSelect
+
+   PillSelect is the read-only dropdown sibling of PillField — same pill
+   styling, but renders a popup of choices instead of a free-text input.
+   We use it for Class / Grade because educators in our user research
+   consistently picked off-list values (e.g. "Grade 10A", "class10 sec a")
+   that don't render well in the paper header.
+   ───────────────────────────────────────────────────────────────── */
+
+const CLASS_GRADE_OPTIONS: { value: string; label: string }[] = [
+  { value: "Pre-K", label: "Pre-K" },
+  { value: "Kindergarten", label: "Kindergarten" },
+  { value: "Grade 1", label: "Grade 1" },
+  { value: "Grade 2", label: "Grade 2" },
+  { value: "Grade 3", label: "Grade 3" },
+  { value: "Grade 4", label: "Grade 4" },
+  { value: "Grade 5", label: "Grade 5" },
+  { value: "Grade 6", label: "Grade 6" },
+  { value: "Grade 7", label: "Grade 7" },
+  { value: "Grade 8", label: "Grade 8" },
+  { value: "Grade 9", label: "Grade 9" },
+  { value: "Grade 10", label: "Grade 10" },
+  { value: "Grade 11", label: "Grade 11" },
+  { value: "Grade 12", label: "Grade 12" },
+  { value: "Undergraduate", label: "Undergraduate" },
+  { value: "Postgraduate", label: "Postgraduate" },
+];
+
+function PillSelect({
+  label,
+  required,
+  hint,
+  error,
+  placeholder = "Select…",
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  error?: string;
+  placeholder?: string;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const triggerId = React.useId();
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between">
+        <label
+          htmlFor={triggerId}
+          className="text-[16px] font-bold tracking-[-0.04em] text-[#303030]"
+          style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+        >
+          {label}
+          {required && <span className="ml-0.5 text-[#c53535]">*</span>}
+        </label>
+        {hint && (
+          <span className="text-[12px] font-medium text-[rgba(94,94,94,0.6)]">
+            {hint}
+          </span>
+        )}
+      </div>
+
+      <div className="relative" ref={ref}>
+        <button
+          id={triggerId}
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={cn(
+            "flex h-11 w-full items-center justify-between gap-3 rounded-full border-[1.25px] border-[#dadada] bg-transparent px-4 text-left text-[16px] font-medium tracking-[-0.04em] text-[#303030]",
+            "outline-none transition-colors duration-150 hover:border-[#bababa]",
+            "focus-visible:border-[#ff5623] focus-visible:ring-2 focus-visible:ring-[#ff5623]/15",
+            error && "border-[#c53535] hover:border-[#c53535] focus-visible:border-[#c53535] focus-visible:ring-[#c53535]/15"
+          )}
+          style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+        >
+          <span
+            className={cn(
+              "truncate",
+              !selected && "text-[#a9a9a9]"
+            )}
+          >
+            {selected ? selected.label : placeholder}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 text-[#5e5e5e] transition-transform duration-150",
+              open && "rotate-180"
+            )}
+            strokeWidth={2.2}
+          />
+        </button>
+
+        {open && (
+          <div
+            role="listbox"
+            aria-labelledby={triggerId}
+            className="absolute left-0 top-12 z-40 max-h-[280px] w-full overflow-y-auto rounded-2xl border border-[#ececec] bg-white p-1.5 shadow-[0_16px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.06)]"
+          >
+            {options.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  key={opt.value}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-[14px] font-medium transition-colors duration-100",
+                    isSelected
+                      ? "bg-[#fff0ea] text-[#ff5623]"
+                      : "text-[#303030] hover:bg-[#f6f6f6]"
+                  )}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {isSelected && <Check className="h-4 w-4 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <p role="alert" className="text-[12px] font-medium text-[#c53535]">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}

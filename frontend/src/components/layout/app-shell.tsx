@@ -360,11 +360,16 @@ function MobileDrawer({
 
 function ProfileCard() {
   const { user, loading } = useUser();
-  const { name, school, initials } = userDisplay(user);
+  const { name, school, initials, avatarUrl } = userDisplay(user);
 
   return (
     <div className="flex items-center gap-2 rounded-2xl bg-[#f0f0f0] p-3">
-      <Avatar initials={initials} className="h-12 w-12 shrink-0" />
+      <Avatar
+        initials={initials}
+        avatarUrl={avatarUrl}
+        alt={`${name}'s profile picture`}
+        className="h-12 w-12 shrink-0"
+      />
       <div className="min-w-0 flex-1">
         {loading ? (
           <div className="space-y-1.5">
@@ -560,7 +565,7 @@ function NotificationsButton() {
 
 function ProfileMenu() {
   const { user, signOut } = useUser();
-  const { name, email, initials } = userDisplay(user);
+  const { name, email, initials, avatarUrl } = userDisplay(user);
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -587,26 +592,42 @@ function ProfileMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={`Account menu for ${name}`}
         className="flex items-center gap-2 rounded-xl bg-white py-1.5 pl-1.5 pr-2 text-[14px] font-medium text-foreground shadow-sm transition-shadow duration-150 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:pr-3"
       >
-        <Avatar initials={initials} className="h-8 w-8" />
+        <Avatar
+          initials={initials}
+          avatarUrl={avatarUrl}
+          alt={`${name}'s profile picture`}
+          className="h-8 w-8"
+        />
         <span className="hidden truncate sm:inline max-w-[120px]">{name}</span>
-        <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
+        <ChevronDown
+          className={cn(
+            "hidden h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 sm:block",
+            open && "rotate-180"
+          )}
+        />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-12 z-50 w-[240px] overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-xl"
+          className="absolute right-0 top-12 z-50 w-[260px] overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-xl"
         >
           <div className="flex items-center gap-3 border-b border-[#f0f0f0] px-4 py-3">
-            <Avatar initials={initials} className="h-10 w-10" />
+            <Avatar
+              initials={initials}
+              avatarUrl={avatarUrl}
+              alt={`${name}'s profile picture`}
+              className="h-11 w-11"
+            />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13.5px] font-semibold text-foreground">
+              <div className="truncate text-[14px] font-semibold text-foreground">
                 {name}
               </div>
               {email && (
-                <div className="truncate text-[11.5px] text-muted-foreground">
+                <div className="truncate text-[12px] text-muted-foreground">
                   {email}
                 </div>
               )}
@@ -617,10 +638,10 @@ function ProfileMenu() {
               role="menuitem"
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] text-foreground transition-colors hover:bg-[#f6f6f6]"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[14px] font-medium text-foreground transition-colors hover:bg-[#f6f6f6]"
             >
-              <UserIcon className="h-4 w-4 text-muted-foreground" />
-              Account settings
+              <UserIcon className="h-[18px] w-[18px] text-muted-foreground" />
+              Edit Profile
             </Link>
             <button
               role="menuitem"
@@ -629,10 +650,10 @@ function ProfileMenu() {
                 setOpen(false);
                 signOut();
               }}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13.5px] text-[#c53535] transition-colors hover:bg-[#fdecec]"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[14px] font-medium text-[#c53535] transition-colors hover:bg-[#fdecec]"
             >
-              <LogOut className="h-4 w-4" />
-              Sign out
+              <LogOut className="h-[18px] w-[18px]" />
+              Log out
             </button>
           </div>
         </div>
@@ -645,11 +666,31 @@ function ProfileMenu() {
 
 function Avatar({
   initials,
+  avatarUrl,
+  alt,
   className,
 }: {
   initials: string;
+  avatarUrl?: string;
+  alt?: string;
   className?: string;
 }) {
+  /* If we have an uploaded picture, render it; otherwise fall back to the
+     warm gradient + initials. We use a plain <img> (not next/image) so that
+     base64 data: URLs from the Settings uploader render with no extra
+     pipeline configuration. */
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={alt ?? "Profile picture"}
+        className={cn(
+          "inline-block shrink-0 rounded-full object-cover",
+          className
+        )}
+      />
+    );
+  }
   return (
     <span
       className={cn(
