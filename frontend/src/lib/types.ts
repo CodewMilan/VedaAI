@@ -145,6 +145,68 @@ export const GROUP_COLOR_TOKENS: Record<
   yellow: { bg: "#ca8a04", bgSoft: "#fef6dc", fg: "#854d0e", ring: "#f3deaa" },
 };
 
+/* ─────────── Library (Question Bank feature) ─────────── */
+
+export interface LibraryQuestion {
+  id: string;
+  text: string;
+  type: QuestionType;
+  difficulty: Difficulty;
+  marks: number;
+  options?: string[];
+  answer?: string;
+  subject?: string;
+  topic?: string;
+  sourceAssignmentId?: string;
+  sourceTitle?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateLibraryQuestionInput {
+  text: string;
+  type: QuestionType;
+  difficulty: Difficulty;
+  marks: number;
+  options?: string[];
+  answer?: string;
+  subject?: string;
+  topic?: string;
+  sourceAssignmentId?: string;
+  sourceTitle?: string;
+}
+
+export interface LibraryFacet {
+  value: string;
+  count: number;
+}
+
+export interface LibraryFacets {
+  subjects: LibraryFacet[];
+  types: LibraryFacet[];
+  difficulties: LibraryFacet[];
+  total: number;
+}
+
+export interface LibraryListResponse {
+  items: LibraryQuestion[];
+  total: number;
+  facets: LibraryFacets;
+}
+
+export interface LibraryQuery {
+  q?: string;
+  subject?: string;
+  type?: QuestionType;
+  difficulty?: Difficulty;
+}
+
+export interface BulkSaveLibraryResponse {
+  inserted: LibraryQuestion[];
+  insertedCount: number;
+  skipped: number;
+}
+
 export interface SocketAssignmentEvent {
   assignmentId: string;
   status: AssignmentStatus;

@@ -121,3 +121,29 @@ export const UpdateGroupSchema = CreateGroupSchema.partial();
 export const AssignToGroupsSchema = z.object({
   assignmentIds: z.array(z.string()).min(1),
 });
+
+/* ─────────── Library (Question Bank feature) ─────────── */
+
+export const CreateLibraryQuestionSchema = z.object({
+  text: z.string().min(1).max(2000),
+  type: QuestionTypeSchema,
+  difficulty: DifficultySchema.default("moderate"),
+  marks: z.coerce.number().min(0).max(100).default(1),
+  options: z.array(z.string()).optional(),
+  answer: z.string().max(2000).optional().or(z.literal("")),
+  subject: z.string().max(100).optional().or(z.literal("")),
+  topic: z.string().max(80).optional().or(z.literal("")),
+  sourceAssignmentId: z.string().optional(),
+  sourceTitle: z.string().max(200).optional().or(z.literal("")),
+});
+export type CreateLibraryQuestionInput = z.infer<
+  typeof CreateLibraryQuestionSchema
+>;
+
+export const UpdateLibraryQuestionSchema = CreateLibraryQuestionSchema.partial();
+
+/* Bulk save (e.g. "Save all questions from this paper"). Capped to keep a
+   single request bounded. */
+export const BulkSaveLibrarySchema = z.object({
+  questions: z.array(CreateLibraryQuestionSchema).min(1).max(200),
+});

@@ -10,11 +10,17 @@ import {
   Loader2,
   Printer,
   MoreVertical,
+  BookMarked,
 } from "lucide-react";
-import { deleteAssignment, regenerateAssignment } from "@/lib/api";
+import {
+  bulkSaveLibraryQuestions,
+  deleteAssignment,
+  regenerateAssignment,
+} from "@/lib/api";
 import { useAssignmentsStore } from "@/store/assignments";
+import { useLibraryStore } from "@/store/library";
 import { useUser, userDisplay } from "@/lib/auth/use-user";
-import type { Assignment } from "@/lib/types";
+import type { Assignment, CreateLibraryQuestionInput } from "@/lib/types";
 
 interface ActionBarProps {
   assignment: Assignment;
@@ -37,8 +43,11 @@ export function ActionBar({ assignment }: ActionBarProps) {
 
   const upsert = useAssignmentsStore((s) => s.upsert);
   const remove = useAssignmentsStore((s) => s.remove);
+  const refetchLibrary = useLibraryStore((s) => s.fetch);
 
-  const [busy, setBusy] = React.useState<"regen" | "del" | "pdf" | null>(null);
+  const [busy, setBusy] = React.useState<
+    "regen" | "del" | "pdf" | "lib" | null
+  >(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -89,6 +98,49 @@ export function ActionBar({ assignment }: ActionBarProps) {
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "PDF export failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const onSaveToLibrary = async () => {
+    setMenuOpen(false);
+    const paper = assignment.result;
+    if (!paper) return;
+    const questions: CreateLibraryQuestionInput[] = [];
+    for (const section of paper.sections) {
+      for (const q of section.questions) {
+        questions.push({
+          text: q.text,
+          type: q.type,
+          difficulty: q.difficulty,
+          marks: q.marks,
+          options: q.options,
+          answer: q.answer,
+          subject: paper.meta.subject || assignment.subject || undefined,
+          sourceAssignmentId: assignment.id,
+          sourceTitle: assignment.title,
+        });
+      }
+    }
+    if (!questions.length) {
+      toast.error("Nothing to save yet");
+      return;
+    }
+    setBusy("lib");
+    try {
+      const res = await bulkSaveLibraryQuestions(questions);
+      refetchLibrary();
+      if (res.insertedCount === 0) {
+        toast.success("Already in your library");
+      } else {
+        toast.success(
+          `Saved ${res.insertedCount} question${res.insertedCount === 1 ? "" : "s"} to your library` +
+            (res.skipped ? ` · ${res.skipped} already saved` : "")
+        );
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setBusy(null);
     }
@@ -161,6 +213,18 @@ export function ActionBar({ assignment }: ActionBarProps) {
               role="menu"
               className="absolute right-0 top-12 z-50 min-w-[200px] overflow-hidden rounded-2xl bg-white py-2 shadow-[0_16px_32px_rgba(0,0,0,0.16),0_4px_8px_rgba(0,0,0,0.08)]"
             >
+              <MenuItem
+                onClick={onSaveToLibrary}
+                disabled={!ready || busy !== null}
+                icon={
+                  busy === "lib" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <BookMarked className="h-4 w-4" />
+                  )
+                }
+                label="Save to Library"
+              />
               <MenuItem
                 onClick={onRegenerate}
                 disabled={busy !== null || assignment.status === "processing"}

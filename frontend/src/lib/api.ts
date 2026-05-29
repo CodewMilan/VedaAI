@@ -1,8 +1,13 @@
 import type {
   Assignment,
+  BulkSaveLibraryResponse,
   CreateGroupInput,
+  CreateLibraryQuestionInput,
   Group,
   GroupWithAssignments,
+  LibraryListResponse,
+  LibraryQuery,
+  LibraryQuestion,
 } from "./types";
 
 const API_BASE =
@@ -121,6 +126,65 @@ export async function unassignAssignmentFromGroup(
     { method: "DELETE" }
   );
   if (!res.ok) throw new Error(`Unassign failed: ${res.status}`);
+}
+
+/* ─────────── Library (Question Bank) ─────────── */
+
+export async function listLibraryQuestions(
+  query: LibraryQuery = {}
+): Promise<LibraryListResponse> {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  if (query.subject) params.set("subject", query.subject);
+  if (query.type) params.set("type", query.type);
+  if (query.difficulty) params.set("difficulty", query.difficulty);
+  const qs = params.toString();
+  const res = await fetch(
+    `${API_BASE}/api/library${qs ? `?${qs}` : ""}`,
+    { cache: "no-store" }
+  );
+  return jsonOrThrow<LibraryListResponse>(res);
+}
+
+export async function createLibraryQuestion(
+  input: CreateLibraryQuestionInput
+): Promise<LibraryQuestion> {
+  const res = await fetch(`${API_BASE}/api/library`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return jsonOrThrow<LibraryQuestion>(res);
+}
+
+export async function bulkSaveLibraryQuestions(
+  questions: CreateLibraryQuestionInput[]
+): Promise<BulkSaveLibraryResponse> {
+  const res = await fetch(`${API_BASE}/api/library/bulk`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ questions }),
+  });
+  return jsonOrThrow<BulkSaveLibraryResponse>(res);
+}
+
+export async function updateLibraryQuestion(
+  id: string,
+  input: Partial<CreateLibraryQuestionInput>
+): Promise<LibraryQuestion> {
+  const res = await fetch(`${API_BASE}/api/library/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return jsonOrThrow<LibraryQuestion>(res);
+}
+
+export async function deleteLibraryQuestion(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/library/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
 }
 
 export const API = { API_BASE };
