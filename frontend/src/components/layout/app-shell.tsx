@@ -146,29 +146,27 @@ function isTabActive(href: string, pathname: string) {
 function MobileTabBar() {
   const pathname = usePathname();
 
-  /* Don't show the tab bar on the new-assignment form — the user is mid-flow
-     and the sticky form footer needs the screen real-estate. */
-  if (pathname === "/assignments/new") return null;
-
   return (
     <div
       data-figma-node="19:352"
       className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40 px-2.5 pb-3 lg:hidden"
     >
       <div className="pointer-events-auto mx-auto flex max-w-[480px] flex-col items-end gap-3">
-        {/* Floating "+ Create" button — Figma 19:353/54 */}
-        <Link
-          href="/assignments/new"
-          aria-label="Create assignment"
-          className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#ff5623]",
-            "shadow-[0_16px_24px_rgba(0,0,0,0.12),0_32px_24px_rgba(0,0,0,0.2)]",
-            "transition-transform duration-150 hover:scale-105",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5623] focus-visible:ring-offset-2"
-          )}
-        >
-          <Plus className="h-5 w-5" strokeWidth={2.4} />
-        </Link>
+        {/* Floating "+ Create" button — hidden when already on the create page */}
+        {pathname !== "/assignments/new" && (
+          <Link
+            href="/assignments/new"
+            aria-label="Create assignment"
+            className={cn(
+              "flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#ff5623]",
+              "shadow-[0_16px_24px_rgba(0,0,0,0.12),0_32px_24px_rgba(0,0,0,0.2)]",
+              "transition-transform duration-150 hover:scale-105",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff5623] focus-visible:ring-offset-2"
+            )}
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.4} />
+          </Link>
+        )}
 
         {/* Tab bar — Figma 19:356: bg #181818, h-72, rounded-24, dropshadow */}
         <nav
@@ -329,15 +327,15 @@ function MobileDrawer({
         tabIndex={open ? 0 : -1}
       />
 
-      {/* Drawer panel */}
+      {/* Drawer panel — slides in from the right (Figma 19:786) */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
         className={cn(
-          "absolute bottom-3 left-3 top-3 flex w-[304px] max-w-[85vw] flex-col overflow-y-auto rounded-2xl bg-white p-6 sidebar-shadow",
+          "absolute bottom-3 right-3 top-3 flex w-[304px] max-w-[85vw] flex-col overflow-y-auto rounded-2xl bg-white p-6 sidebar-shadow",
           "transition-transform duration-300 ease-out",
-          open ? "translate-x-0" : "-translate-x-[calc(100%+1rem)]"
+          open ? "translate-x-0" : "translate-x-[calc(100%+1rem)]"
         )}
       >
         {/* Close button — top right of drawer */}
@@ -415,17 +413,23 @@ function TopBar({
         "shadow-[0_1px_2px_rgba(15,15,15,0.04)]"
       )}
     >
-      {/* Mobile: hamburger button */}
-      <button
-        type="button"
-        onClick={onMenuClick}
-        aria-label="Open menu"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-[#f0f0f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+      {/* ── Mobile left: Logo + wordmark (Figma 19:787) ── */}
+      {/* On desktop this area is replaced by the sidebar's own logo. */}
+      <Link
+        href="/"
+        data-figma-node="19:787"
+        className="flex shrink-0 items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
       >
-        <Menu className="h-[20px] w-[20px]" />
-      </button>
+        <VedaLogo size={28} />
+        <span
+          className="text-[20px] font-bold leading-none tracking-[-0.06em] text-[#303030]"
+          style={{ fontVariationSettings: "'opsz' 14, 'wdth' 100" }}
+        >
+          VedaAI
+        </span>
+      </Link>
 
-      {/* Desktop: back button or spacer */}
+      {/* ── Desktop left: back button or spacer ── */}
       {showBack ? (
         <Link
           href="/"
@@ -438,18 +442,30 @@ function TopBar({
         <div className="hidden w-1 lg:block" />
       )}
 
-      {/* Breadcrumb */}
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <LayoutDashboard className="hidden h-[18px] w-[18px] shrink-0 text-[#a9a9a9] sm:block" />
-        <span className="truncate text-[15px] font-semibold tracking-[-0.04em] text-[#a9a9a9] sm:text-[16px]">
+      {/* ── Breadcrumb — desktop only (mobile shows the logo instead) ── */}
+      <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
+        <LayoutDashboard className="h-[18px] w-[18px] shrink-0 text-[#a9a9a9]" />
+        <span className="truncate text-[16px] font-semibold tracking-[-0.04em] text-[#a9a9a9]">
           {crumb}
         </span>
       </div>
 
-      {/* Right side */}
+      {/* Flex spacer on mobile pushes right-side items to the edge */}
+      <div className="flex-1 lg:hidden" />
+
+      {/* ── Right side: Bell → Profile → Hamburger (Figma 19:794) ── */}
+      {/* Hamburger is last and mobile-only — matches Figma 19:799 */}
       <div className="flex shrink-0 items-center gap-2">
         <NotificationsButton />
         <ProfileMenu />
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-[#f0f0f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+        >
+          <Menu className="h-[20px] w-[20px]" />
+        </button>
       </div>
     </header>
   );
